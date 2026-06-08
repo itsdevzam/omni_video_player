@@ -184,4 +184,15 @@ abstract class OmniPlaybackController with ChangeNotifier {
   /// - Pausing videos when scrolled out of view.
   /// - Auto-playing only when the player is completely visible.
   bool isFullyVisible = false;
+
+  /// Active fullscreen video scaling mode (contain / cover / fill).
+  BoxFit _fullscreenVideoFit = BoxFit.cover;
+
+  BoxFit get fullscreenVideoFit => _fullscreenVideoFit;
+
+  void setFullscreenVideoFit(BoxFit fit) {
+    if (_fullscreenVideoFit == fit) return;
+    _fullscreenVideoFit = fit;
+    notifyListeners();
+  }
 }

@@ -121,6 +121,9 @@ class PlayerUIVisibilityOptions {
   /// [BoxFit.contain] fits the full video with possible letterboxing.
   final BoxFit fullscreenVideoFit;
 
+  /// Shows a fullscreen-only button to switch video fit (ratio / fill / stretch).
+  final bool showFullscreenVideoFitButton;
+
   /// Whether to always show the bottom control bar,
   /// even when the video is paused or hasn't started yet.
   final bool alwaysShowBottomControlsBar;
@@ -186,6 +189,7 @@ class PlayerUIVisibilityOptions {
     this.customAspectRatioFullScreen,
     this.fullscreenOrientation,
     this.fullscreenVideoFit = BoxFit.cover,
+    this.showFullscreenVideoFitButton = true,
     this.showScrubbingThumbnailPreview = true,
     this.fitVideoToBounds = true,
     this.enableZoom = false,
@@ -224,6 +228,7 @@ class PlayerUIVisibilityOptions {
     double? customAspectRatioFullScreen,
     Orientation? fullscreenOrientation,
     BoxFit? fullscreenVideoFit,
+    bool? showFullscreenVideoFitButton,
     bool? showScrubbingThumbnailPreview,
     bool? fitVideoToBounds,
     bool? enableZoom,
@@ -269,6 +274,8 @@ class PlayerUIVisibilityOptions {
       fullscreenOrientation:
           fullscreenOrientation ?? this.fullscreenOrientation,
       fullscreenVideoFit: fullscreenVideoFit ?? this.fullscreenVideoFit,
+      showFullscreenVideoFitButton:
+          showFullscreenVideoFitButton ?? this.showFullscreenVideoFitButton,
       showPlayPauseReplayButton:
           showPlayPauseReplayButton ?? this.showPlayPauseReplayButton,
       showBottomControlsBarOnEndedFullscreen:

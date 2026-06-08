@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:omni_video_player/omni_video_player/controllers/omni_playback_controller.dart';
 import 'package:omni_video_player/omni_video_player/models/omni_video_quality.dart';
 import 'package:omni_video_player/omni_video_player/theme/omni_video_player_theme.dart';
 import 'package:omni_video_player/src/utils/accessibility/accessible.dart';
@@ -7,6 +8,7 @@ import 'package:omni_video_player/src/widgets/controls/overlay_button_wrapper.da
 import 'video_control_icon_button.dart';
 
 class VideoQualityMenuButton extends StatelessWidget {
+  final OmniPlaybackController controller;
   final List<OmniVideoQuality>? qualityList;
   final OmniVideoQuality? currentQuality;
   final void Function(OmniVideoQuality selectedQuality) onQualitySelected;
@@ -15,6 +17,7 @@ class VideoQualityMenuButton extends StatelessWidget {
 
   const VideoQualityMenuButton({
     super.key,
+    required this.controller,
     required this.qualityList,
     required this.currentQuality,
     required this.onQualitySelected,
@@ -113,17 +116,24 @@ class VideoQualityMenuButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = OmniVideoPlayerTheme.of(context)!;
 
-    return OverlayButtonWrapper(
-      followerOffset: const Offset(0, 6),
-      childBuilder: (toggleOverlay, expanded) => VideoControlIconButton(
-        semanticLabel: theme.accessibility.qualityButtonLabel,
-        expanded: expanded,
-        onPressed: toggleOverlay,
-        icon: theme.icons.qualityChangeButton,
-      ),
-      overlayBuilder: (dismissOverlay) => _buildMenu(theme, dismissOverlay),
-      onStartInteraction: onStartInteraction,
-      onEndInteraction: onEndInteraction,
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, _) {
+        return OverlayButtonWrapper(
+          openMenuAbove: controller.isFullScreen,
+          followerOffset: const Offset(0, 6),
+          childBuilder: (toggleOverlay, expanded) => VideoControlIconButton(
+            semanticLabel: theme.accessibility.qualityButtonLabel,
+            expanded: expanded,
+            onPressed: toggleOverlay,
+            icon: theme.icons.qualityChangeButton,
+          ),
+          overlayBuilder: (dismissOverlay) =>
+              _buildMenu(theme, dismissOverlay),
+          onStartInteraction: onStartInteraction,
+          onEndInteraction: onEndInteraction,
+        );
+      },
     );
   }
 }

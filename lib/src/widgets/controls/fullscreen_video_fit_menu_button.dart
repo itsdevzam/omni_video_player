@@ -6,20 +6,27 @@ import 'package:omni_video_player/src/widgets/controls/overlay_button_wrapper.da
 
 import 'video_control_icon_button.dart';
 
-class PlaybackSpeedMenuButton extends StatelessWidget {
+class _FitOption {
+  final BoxFit fit;
+  final String label;
+
+  const _FitOption(this.fit, this.label);
+}
+
+const _fitOptions = [
+  _FitOption(BoxFit.contain, 'Fit ratio'),
+  _FitOption(BoxFit.cover, 'Fill screen'),
+  _FitOption(BoxFit.fill, 'Stretch'),
+];
+
+class FullscreenVideoFitMenuButton extends StatelessWidget {
   final OmniPlaybackController controller;
-  final List<double> speedList;
-  final double currentSpeed;
-  final void Function(double selectedSpeed) onSpeedSelected;
   final VoidCallback onStartInteraction;
   final VoidCallback onEndInteraction;
 
-  const PlaybackSpeedMenuButton({
+  const FullscreenVideoFitMenuButton({
     super.key,
     required this.controller,
-    required this.speedList,
-    required this.currentSpeed,
-    required this.onSpeedSelected,
     required this.onStartInteraction,
     required this.onEndInteraction,
   });
@@ -32,7 +39,7 @@ class PlaybackSpeedMenuButton extends StatelessWidget {
       elevation: 8,
       color: theme.colors.menuBackground,
       child: Container(
-        width: 110,
+        width: 140,
         decoration:
             theme.menus.menuDecoration ??
             BoxDecoration(
@@ -44,11 +51,11 @@ class PlaybackSpeedMenuButton extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.symmetric(vertical: 8),
           shrinkWrap: true,
-          children: speedList.map((speed) {
-            final isSelected = speed == currentSpeed;
+          children: _fitOptions.map((option) {
+            final isSelected = controller.fullscreenVideoFit == option.fit;
             return Accessible.clickable(
               onTap: () {
-                onSpeedSelected(speed);
+                controller.setFullscreenVideoFit(option.fit);
                 dismissOverlay();
               },
               child: Container(
@@ -58,21 +65,21 @@ class PlaybackSpeedMenuButton extends StatelessWidget {
                 ),
                 child: Row(
                   spacing: 8,
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "${speed}x",
-                      style: TextStyle(
-                        color: isSelected
-                            ? theme.colors.menuTextSelected
-                            : theme.colors.menuText,
-                        fontWeight: isSelected
-                            ? FontWeight.bold
-                            : FontWeight.normal,
+                    Expanded(
+                      child: Text(
+                        option.label,
+                        style: TextStyle(
+                          color: isSelected
+                              ? theme.colors.menuTextSelected
+                              : theme.colors.menuText,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
                       ),
                     ),
-                    if (isSelected && speedList.length > 1)
+                    if (isSelected)
                       Icon(
                         theme.icons.qualitySelectedCheck,
                         color: theme.colors.menuIconSelected,
@@ -96,13 +103,13 @@ class PlaybackSpeedMenuButton extends StatelessWidget {
       listenable: controller,
       builder: (context, _) {
         return OverlayButtonWrapper(
-          openMenuAbove: controller.isFullScreen,
+          openMenuAbove: true,
           followerOffset: const Offset(0, 6),
           childBuilder: (toggleOverlay, expanded) => VideoControlIconButton(
-            semanticLabel: theme.accessibility.playbackSpeedButtonLabel,
+            semanticLabel: 'Change fullscreen video fit',
             expanded: expanded,
             onPressed: toggleOverlay,
-            icon: theme.icons.playbackSpeedButton,
+            icon: Icons.aspect_ratio,
           ),
           overlayBuilder: (dismissOverlay) =>
               _buildMenu(theme, dismissOverlay),

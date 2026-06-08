@@ -8,8 +8,7 @@ class OverlayButtonWrapper extends StatefulWidget {
     required this.overlayBuilder,
     required this.onStartInteraction,
     required this.onEndInteraction,
-    this.targetAnchor = Alignment.bottomCenter,
-    this.followerAnchor = Alignment.topCenter,
+    this.openMenuAbove = false,
     this.followerOffset = Offset.zero,
   });
 
@@ -19,9 +18,8 @@ class OverlayButtonWrapper extends StatefulWidget {
   /// Builder dell'overlay, riceve una funzione dismiss per chiuderlo
   final Widget Function(VoidCallback dismissOverlay) overlayBuilder;
 
-  final Alignment targetAnchor;
-
-  final Alignment followerAnchor;
+  /// Opens the menu above the button when true, below when false.
+  final bool openMenuAbove;
 
   final Offset followerOffset;
 
@@ -35,6 +33,7 @@ class OverlayButtonWrapper extends StatefulWidget {
 class _OverlayButtonWrapperState extends State<OverlayButtonWrapper> {
   final LayerLink _layerLink = LayerLink();
   OverlayEntry? _overlayEntry;
+
   void _dismissOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
@@ -47,6 +46,16 @@ class _OverlayButtonWrapperState extends State<OverlayButtonWrapper> {
       _dismissOverlay();
       return;
     }
+
+    final targetAnchor = widget.openMenuAbove
+        ? Alignment.topCenter
+        : Alignment.bottomCenter;
+    final followerAnchor = widget.openMenuAbove
+        ? Alignment.bottomCenter
+        : Alignment.topCenter;
+    final offset = widget.openMenuAbove
+        ? Offset(0, -widget.followerOffset.dy.abs())
+        : widget.followerOffset;
 
     _overlayEntry = OverlayEntry(
       builder: (context) {
@@ -63,9 +72,9 @@ class _OverlayButtonWrapperState extends State<OverlayButtonWrapper> {
             CompositedTransformFollower(
               link: _layerLink,
               showWhenUnlinked: false,
-              targetAnchor: widget.targetAnchor,
-              followerAnchor: widget.followerAnchor,
-              offset: widget.followerOffset,
+              targetAnchor: targetAnchor,
+              followerAnchor: followerAnchor,
+              offset: offset,
               child: Material(
                 color: Colors.transparent,
                 child: widget.overlayBuilder(_dismissOverlay),

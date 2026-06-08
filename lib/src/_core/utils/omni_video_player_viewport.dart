@@ -33,21 +33,8 @@ class OmniVideoPlayerViewport extends StatelessWidget {
             ? (player ?? const SizedBox.shrink())
             : const SizedBox.shrink();
 
-        if (isFullScreenDisplay && fullscreenFit == BoxFit.cover) {
-          final width = ratio >= 1 ? ratio : 1.0;
-          final height = ratio >= 1 ? 1.0 : 1.0 / ratio;
-
-          return SizedBox.expand(
-            child: FittedBox(
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-              child: SizedBox(
-                width: width * 1000,
-                height: height * 1000,
-                child: videoChild,
-              ),
-            ),
-          );
+        if (isFullScreenDisplay && fullscreenFit != null) {
+          return _buildFullscreenChild(videoChild, ratio, fullscreenFit!);
         }
 
         return AspectRatio(
@@ -55,6 +42,38 @@ class OmniVideoPlayerViewport extends StatelessWidget {
           child: videoChild,
         );
       },
+    );
+  }
+
+  Widget _buildFullscreenChild(Widget videoChild, double ratio, BoxFit fit) {
+    if (fit == BoxFit.contain) {
+      return SizedBox.expand(
+        child: Center(
+          child: AspectRatio(
+            aspectRatio: ratio,
+            child: videoChild,
+          ),
+        ),
+      );
+    }
+
+    if (fit == BoxFit.fill) {
+      return SizedBox.expand(child: videoChild);
+    }
+
+    final width = ratio >= 1 ? ratio : 1.0;
+    final height = ratio >= 1 ? 1.0 : 1.0 / ratio;
+
+    return SizedBox.expand(
+      child: FittedBox(
+        fit: BoxFit.cover,
+        alignment: Alignment.center,
+        child: SizedBox(
+          width: width * 1000,
+          height: height * 1000,
+          child: videoChild,
+        ),
+      ),
     );
   }
 }

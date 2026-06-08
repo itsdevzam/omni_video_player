@@ -41,6 +41,9 @@ class _OmniVideoPlayerFullscreenState extends State<OmniVideoPlayerFullscreen> {
     super.initState();
     _enterFullscreenMode();
     _effectiveAspectRatio = _computeAspectRatio();
+    widget.controller.setFullscreenVideoFit(
+      widget.configuration.playerUIVisibilityOptions.fullscreenVideoFit,
+    );
   }
 
   @override
@@ -119,10 +122,7 @@ class _OmniVideoPlayerFullscreenState extends State<OmniVideoPlayerFullscreen> {
               controller: widget.controller,
               isFullScreenDisplay: true,
               aspectRatio: _effectiveAspectRatio,
-              fullscreenFit: widget
-                  .configuration
-                  .playerUIVisibilityOptions
-                  .fullscreenVideoFit,
+              fullscreenFit: widget.controller.fullscreenVideoFit,
             ),
           ),
         ),
