@@ -13,6 +13,7 @@ class OverlayButtonWrapper extends StatefulWidget {
     this.followerAnchor = Alignment.bottomCenter,
     this.followerOffset = Offset.zero,
     this.screenHorizontalMargin = 12,
+    this.useFullWidthMenu = false,
   });
 
   /// Builder del pulsante: riceve toggleOverlay
@@ -29,6 +30,9 @@ class OverlayButtonWrapper extends StatefulWidget {
 
   final double screenHorizontalMargin;
 
+  /// When true, menu spans screen width with [screenHorizontalMargin] on both sides.
+  final bool useFullWidthMenu;
+
   final VoidCallback onStartInteraction;
   final VoidCallback onEndInteraction;
 
@@ -36,17 +40,23 @@ class OverlayButtonWrapper extends StatefulWidget {
   State<OverlayButtonWrapper> createState() => _OverlayButtonWrapperState();
 }
 
+class _OverlayMenuLayout {
+  final double? left;
+  final double? right;
+  final double? top;
+
+  const _OverlayMenuLayout({this.left, this.right, this.top});
+}
+
 class _OverlayButtonWrapperState extends State<OverlayButtonWrapper> {
   final GlobalKey _targetKey = GlobalKey();
-  final GlobalKey _menuKey = GlobalKey();
   OverlayEntry? _overlayEntry;
-  Offset _menuPosition = Offset.zero;
-  bool _menuPositionReady = false;
+  _OverlayMenuLayout? _menuLayout;
 
   void _dismissOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
-    _menuPositionReady = false;
+    _menuLayout = null;
     widget.onEndInteraction();
     setState(() {});
   }
@@ -55,70 +65,56 @@ class _OverlayButtonWrapperState extends State<OverlayButtonWrapper> {
     return (alignmentComponent + 1) / 2;
   }
 
-  void _updateMenuPosition() {
-    if (!mounted || _overlayEntry == null) return;
-
+  _OverlayMenuLayout? _resolveMenuLayout(BuildContext overlayContext) {
     final targetContext = _targetKey.currentContext;
-    final menuContext = _menuKey.currentContext;
-    if (targetContext == null || menuContext == null) return;
+    if (targetContext == null) return null;
 
     final targetBox = targetContext.findRenderObject() as RenderBox?;
-    final menuBox = menuContext.findRenderObject() as RenderBox?;
-    if (targetBox == null || menuBox == null || !menuBox.hasSize) return;
+    if (targetBox == null) return null;
 
-    final overlayBox =
-        Overlay.of(context, rootOverlay: true).context.findRenderObject()
-            as RenderBox?;
-    if (overlayBox == null) return;
+    final overlayBox = overlayContext.findRenderObject() as RenderBox?;
+    if (overlayBox == null) return null;
 
     final targetTopLeft = targetBox.localToGlobal(
       Offset.zero,
       ancestor: overlayBox,
     );
     final targetSize = targetBox.size;
-    final menuSize = menuBox.size;
-    final screenWidth = overlayBox.size.width;
     final margin = widget.screenHorizontalMargin;
+    final safePadding = MediaQuery.paddingOf(overlayContext);
 
-    final anchorX =
-        targetTopLeft.dx +
-        targetSize.width * _alignmentToUnit(widget.targetAnchor.x);
     final anchorY =
         targetTopLeft.dy +
         targetSize.height * _alignmentToUnit(widget.targetAnchor.y);
+    final top = anchorY + widget.followerOffset.dy;
 
-    final menuAnchorX =
-        menuSize.width * _alignmentToUnit(widget.followerAnchor.x);
-    final menuAnchorY =
-        menuSize.height * _alignmentToUnit(widget.followerAnchor.y);
-
-    var left = anchorX - menuAnchorX + widget.followerOffset.dx;
-    final top = anchorY - menuAnchorY + widget.followerOffset.dy;
-
-    final maxLeft = screenWidth - menuSize.width - margin;
-    if (maxLeft < margin) {
-      left = margin;
-    } else {
-      left = left.clamp(margin, maxLeft);
+    if (widget.useFullWidthMenu) {
+      return _OverlayMenuLayout(
+        left: margin + safePadding.left,
+        right: margin + safePadding.right,
+        top: top,
+      );
     }
 
-    final nextPosition = Offset(left, top);
-    final changed =
-        !_menuPositionReady || (_menuPosition - nextPosition).distance > 0.5;
-
-    if (changed) {
-      _menuPosition = nextPosition;
-      _menuPositionReady = true;
-      _overlayEntry?.markNeedsBuild();
-      setState(() {});
-    }
+    return _OverlayMenuLayout(left: margin + safePadding.left, top: top);
   }
 
-  void _scheduleMenuPositionUpdate() {
+  void _scheduleMenuLayoutUpdate(BuildContext overlayContext) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      _updateMenuPosition();
-      if (!_menuPositionReady) {
-        _scheduleMenuPositionUpdate();
+      if (!mounted || _overlayEntry == null) return;
+
+      final nextLayout = _resolveMenuLayout(overlayContext);
+      if (nextLayout == null) {
+        _scheduleMenuLayoutUpdate(overlayContext);
+        return;
+      }
+
+      if (_menuLayout?.left != nextLayout.left ||
+          _menuLayout?.right != nextLayout.right ||
+          _menuLayout?.top != nextLayout.top) {
+        _menuLayout = nextLayout;
+        _overlayEntry?.markNeedsBuild();
+        setState(() {});
       }
     });
   }
@@ -129,12 +125,22 @@ class _OverlayButtonWrapperState extends State<OverlayButtonWrapper> {
       return;
     }
 
-    _menuPosition = Offset.zero;
-    _menuPositionReady = false;
+    _menuLayout = null;
 
     _overlayEntry = OverlayEntry(
       builder: (overlayContext) {
-        _scheduleMenuPositionUpdate();
+        _menuLayout ??= _resolveMenuLayout(overlayContext);
+        _scheduleMenuLayoutUpdate(overlayContext);
+
+        final menu = Material(
+          color: Colors.transparent,
+          child: widget.overlayBuilder(_dismissOverlay),
+        );
+
+        final layout = _menuLayout;
+        if (layout == null) {
+          return const SizedBox.shrink();
+        }
 
         return Stack(
           children: [
@@ -146,20 +152,19 @@ class _OverlayButtonWrapperState extends State<OverlayButtonWrapper> {
                 ),
               ),
             ),
-            Positioned(
-              left: _menuPosition.dx,
-              top: _menuPosition.dy,
-              child: Opacity(
-                opacity: _menuPositionReady ? 1 : 0,
-                child: Material(
-                  color: Colors.transparent,
-                  child: KeyedSubtree(
-                    key: _menuKey,
-                    child: widget.overlayBuilder(_dismissOverlay),
-                  ),
-                ),
+            if (widget.useFullWidthMenu)
+              Positioned(
+                left: layout.left,
+                right: layout.right,
+                top: layout.top,
+                child: menu,
+              )
+            else
+              Positioned(
+                left: layout.left,
+                top: layout.top,
+                child: menu,
               ),
-            ),
           ],
         );
       },

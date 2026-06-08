@@ -46,9 +46,11 @@ class PlaybackSpeedMenuButton extends StatelessWidget {
     final theme = OmniVideoPlayerTheme.of(context)!;
 
     return OverlayButtonWrapper(
+      useFullWidthMenu: true,
       targetAnchor: Alignment.bottomCenter,
       followerAnchor: Alignment.topCenter,
       followerOffset: const Offset(0, 6),
+      screenHorizontalMargin: 12,
       childBuilder: (toggleOverlay, expanded) => VideoControlIconButton(
         semanticLabel: theme.accessibility.playbackSpeedButtonLabel,
         expanded: expanded,

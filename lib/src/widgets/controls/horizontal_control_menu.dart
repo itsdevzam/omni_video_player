@@ -29,14 +29,12 @@ class HorizontalControlMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const horizontalMargin = 12.0;
-    final maxWidth = MediaQuery.sizeOf(context).width - (horizontalMargin * 2);
-
     return Card(
       elevation: 8,
       color: theme.colors.menuBackground,
+      margin: EdgeInsets.zero,
       child: Container(
-        constraints: BoxConstraints(maxWidth: maxWidth),
+        width: double.infinity,
         decoration:
             theme.menus.menuDecoration ??
             BoxDecoration(
