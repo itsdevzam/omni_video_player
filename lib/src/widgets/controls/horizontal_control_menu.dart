@@ -29,7 +29,8 @@ class HorizontalControlMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxWidth = MediaQuery.sizeOf(context).width - 24;
+    const horizontalMargin = 12.0;
+    final maxWidth = MediaQuery.sizeOf(context).width - (horizontalMargin * 2);
 
     return Card(
       elevation: 8,
