@@ -114,12 +114,15 @@ class _OmniVideoPlayerFullscreenState extends State<OmniVideoPlayerFullscreen> {
           controller: widget.controller,
           configuration: widget.configuration,
           callbacks: widget.callbacks,
-          child: Align(
-            alignment: Alignment.center,
+          child: SizedBox.expand(
             child: OmniVideoPlayerViewport(
               controller: widget.controller,
               isFullScreenDisplay: true,
               aspectRatio: _effectiveAspectRatio,
+              fullscreenFit: widget
+                  .configuration
+                  .playerUIVisibilityOptions
+                  .fullscreenVideoFit,
             ),
           ),
         ),

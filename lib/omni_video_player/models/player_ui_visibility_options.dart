@@ -115,6 +115,12 @@ class PlayerUIVisibilityOptions {
   /// portrait if height > width, otherwise landscape.
   final Orientation? fullscreenOrientation;
 
+  /// How the video is scaled in fullscreen.
+  ///
+  /// [BoxFit.cover] fills the device while preserving aspect ratio (may crop).
+  /// [BoxFit.contain] fits the full video with possible letterboxing.
+  final BoxFit fullscreenVideoFit;
+
   /// Whether to always show the bottom control bar,
   /// even when the video is paused or hasn't started yet.
   final bool alwaysShowBottomControlsBar;
@@ -179,6 +185,7 @@ class PlayerUIVisibilityOptions {
     this.customAspectRatioNormal,
     this.customAspectRatioFullScreen,
     this.fullscreenOrientation,
+    this.fullscreenVideoFit = BoxFit.cover,
     this.showScrubbingThumbnailPreview = true,
     this.fitVideoToBounds = true,
     this.enableZoom = false,
@@ -216,6 +223,7 @@ class PlayerUIVisibilityOptions {
     double? customAspectRatioNormal,
     double? customAspectRatioFullScreen,
     Orientation? fullscreenOrientation,
+    BoxFit? fullscreenVideoFit,
     bool? showScrubbingThumbnailPreview,
     bool? fitVideoToBounds,
     bool? enableZoom,
@@ -260,6 +268,7 @@ class PlayerUIVisibilityOptions {
           customAspectRatioFullScreen ?? this.customAspectRatioFullScreen,
       fullscreenOrientation:
           fullscreenOrientation ?? this.fullscreenOrientation,
+      fullscreenVideoFit: fullscreenVideoFit ?? this.fullscreenVideoFit,
       showPlayPauseReplayButton:
           showPlayPauseReplayButton ?? this.showPlayPauseReplayButton,
       showBottomControlsBarOnEndedFullscreen:
