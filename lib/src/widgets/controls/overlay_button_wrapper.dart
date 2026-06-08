@@ -10,6 +10,7 @@ class OverlayButtonWrapper extends StatefulWidget {
     required this.onEndInteraction,
     this.targetAnchor = Alignment.topCenter,
     this.followerAnchor = Alignment.bottomCenter,
+    this.followerOffset = Offset.zero,
   });
 
   /// Builder del pulsante: riceve toggleOverlay
@@ -21,6 +22,8 @@ class OverlayButtonWrapper extends StatefulWidget {
   final Alignment targetAnchor;
 
   final Alignment followerAnchor;
+
+  final Offset followerOffset;
 
   final VoidCallback onStartInteraction;
   final VoidCallback onEndInteraction;
@@ -63,6 +66,7 @@ class _OverlayButtonWrapperState extends State<OverlayButtonWrapper> {
               showWhenUnlinked: false,
               targetAnchor: widget.targetAnchor,
               followerAnchor: widget.followerAnchor,
+              offset: widget.followerOffset,
               child: Material(
                 color: Colors.transparent,
                 child: widget.overlayBuilder(_dismissOverlay),

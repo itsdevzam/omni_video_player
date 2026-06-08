@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:omni_video_player/omni_video_player/theme/omni_video_player_theme.dart';
-import 'package:omni_video_player/src/utils/accessibility/accessible.dart';
+import 'package:omni_video_player/src/widgets/controls/horizontal_control_menu.dart';
 import 'package:omni_video_player/src/widgets/controls/overlay_button_wrapper.dart';
 
 import 'video_control_icon_button.dart';
@@ -25,64 +25,20 @@ class PlaybackSpeedMenuButton extends StatelessWidget {
     OmniVideoPlayerThemeData theme,
     VoidCallback dismissOverlay,
   ) {
-    return Card(
-      elevation: 8,
-      color: theme.colors.menuBackground,
-      child: Container(
-        width: 110,
-        decoration:
-            theme.menus.menuDecoration ??
-            BoxDecoration(
-              color: theme.colors.menuBackground,
-              borderRadius: BorderRadius.circular(
-                theme.shapes.menuBorderRadius,
-              ),
-            ),
-        child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          shrinkWrap: true,
-          children: speedList.map((speed) {
-            final isSelected = speed == currentSpeed;
-            return Accessible.clickable(
-              onTap: () {
-                onSpeedSelected(speed);
-                dismissOverlay();
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                child: Row(
-                  spacing: 8,
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "${speed}x",
-                      style: TextStyle(
-                        color: isSelected
-                            ? theme.colors.menuTextSelected
-                            : theme.colors.menuText,
-                        fontWeight: isSelected
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                      ),
-                    ),
-                    if (isSelected && speedList.length > 1)
-                      Icon(
-                        theme.icons.qualitySelectedCheck,
-                        color: theme.colors.menuIconSelected,
-                        size: 18,
-                      ),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
+    final items = speedList
+        .map(
+          (speed) => HorizontalControlMenuItem(
+            label: "${speed}x",
+            isSelected: speed == currentSpeed,
+            onTap: () {
+              onSpeedSelected(speed);
+              dismissOverlay();
+            },
+          ),
+        )
+        .toList();
+
+    return HorizontalControlMenu(theme: theme, items: items);
   }
 
   @override
@@ -90,6 +46,9 @@ class PlaybackSpeedMenuButton extends StatelessWidget {
     final theme = OmniVideoPlayerTheme.of(context)!;
 
     return OverlayButtonWrapper(
+      targetAnchor: Alignment.bottomCenter,
+      followerAnchor: Alignment.topCenter,
+      followerOffset: const Offset(0, 6),
       childBuilder: (toggleOverlay, expanded) => VideoControlIconButton(
         semanticLabel: theme.accessibility.playbackSpeedButtonLabel,
         expanded: expanded,
