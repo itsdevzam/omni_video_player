@@ -119,19 +119,22 @@ abstract class OmniPlaybackController with ChangeNotifier {
   }
 
   /// Call when the fullscreen page mounts.
-  void enterFullScreenMode() {
+  ///
+  /// Pass [notify] false when called during [State.initState] to avoid
+  /// rebuilding listeners while the widget tree is still building.
+  void enterFullScreenMode({bool notify = true}) {
     if (_isFullScreen) return;
     _isFullScreen = true;
     _enteringFullScreen = false;
-    notifyListeners();
+    if (notify) notifyListeners();
   }
 
   /// Call when the fullscreen page is dismissed.
-  void exitFullScreenMode() {
+  void exitFullScreenMode({bool notify = true}) {
     if (!_isFullScreen && !_enteringFullScreen) return;
     _isFullScreen = false;
     _enteringFullScreen = false;
-    notifyListeners();
+    if (notify) notifyListeners();
   }
 
   /// Resumes playback after fullscreen is shown if it was playing before.
@@ -230,9 +233,9 @@ abstract class OmniPlaybackController with ChangeNotifier {
 
   BoxFit get fullscreenVideoFit => _fullscreenVideoFit;
 
-  void setFullscreenVideoFit(BoxFit fit) {
+  void setFullscreenVideoFit(BoxFit fit, {bool notify = true}) {
     if (_fullscreenVideoFit == fit) return;
     _fullscreenVideoFit = fit;
-    notifyListeners();
+    if (notify) notifyListeners();
   }
 }

@@ -70,7 +70,7 @@ class GenericPlaybackController extends OmniPlaybackController {
   // ---------------------------------------------------------------------------
 
   void _performSyncCheck() {
-    if (audioController == null || isSeeking) {
+    if (audioController == null || isSeeking || isEnteringFullScreen) {
       _videoStuckCounter = 0;
       return;
     }
@@ -684,8 +684,16 @@ class GenericPlaybackController extends OmniPlaybackController {
   /// and an optional [onToggle] callback to react to fullscreen state changes.
   @override
   Future<void> resumeAfterFullScreenEntered() async {
-    if (wasPlayingBeforeFullScreen && !isPlaying && !isFinished) {
+    if (!wasPlayingBeforeFullScreen || isFinished) return;
+
+    // After Hero reparent the video surface may be frozen while audio keeps going.
+    if (!videoController.value.isPlaying) {
       await _resumeSynchronized();
+      return;
+    }
+
+    if (audioController != null && !audioController!.value.isPlaying) {
+      await audioController!.play();
     }
   }
 
