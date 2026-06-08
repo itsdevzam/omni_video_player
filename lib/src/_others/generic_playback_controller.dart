@@ -52,7 +52,6 @@ class GenericPlaybackController extends OmniPlaybackController {
   bool _isFullyVisible = false;
 
   bool _isSeeking = false;
-  bool _isFullScreen = false;
   bool _hasStarted = false;
   bool _isDisposed = false;
   final GlobalPlaybackController? _globalController;
@@ -616,10 +615,6 @@ class GenericPlaybackController extends OmniPlaybackController {
     notifyListeners();
   }
 
-  /// Whether the video is currently in fullscreen mode.
-  @override
-  bool get isFullScreen => _isFullScreen;
-
   /// Returns the current playback position of the video.
   @override
   Duration get currentPosition => videoController.value.position;
@@ -688,17 +683,23 @@ class GenericPlaybackController extends OmniPlaybackController {
   /// Requires a [BuildContext], a [pageBuilder] to render the fullscreen view,
   /// and an optional [onToggle] callback to react to fullscreen state changes.
   @override
+  Future<void> resumeAfterFullScreenEntered() async {
+    if (wasPlayingBeforeFullScreen && !isPlaying && !isFinished) {
+      await _resumeSynchronized();
+    }
+  }
+
+  @override
   Future<void> switchFullScreenMode(
     BuildContext context, {
     required Widget Function(BuildContext)? pageBuilder,
     Widget? playerAlreadyBuilt,
     void Function(bool)? onToggle,
   }) async {
-    if (_isFullScreen) {
+    if (isFullScreen) {
       Navigator.of(context).pop();
     } else {
-      _isFullScreen = true;
-      notifyListeners();
+      beginFullScreenTransition();
       onToggle?.call(true);
 
       await Navigator.push(
@@ -713,8 +714,7 @@ class GenericPlaybackController extends OmniPlaybackController {
         ),
       );
 
-      _isFullScreen = false;
-      notifyListeners();
+      exitFullScreenMode();
       onToggle?.call(false);
     }
   }

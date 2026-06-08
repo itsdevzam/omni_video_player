@@ -7,14 +7,12 @@ class OmniVideoPlayerViewport extends StatelessWidget {
   final OmniPlaybackController controller;
   final bool isFullScreenDisplay;
   final double aspectRatio;
-  final BoxFit? fullscreenFit;
 
   const OmniVideoPlayerViewport({
     super.key,
     required this.controller,
     required this.isFullScreenDisplay,
     required this.aspectRatio,
-    this.fullscreenFit,
   });
 
   @override
@@ -33,8 +31,12 @@ class OmniVideoPlayerViewport extends StatelessWidget {
             ? (player ?? const SizedBox.shrink())
             : const SizedBox.shrink();
 
-        if (isFullScreenDisplay && fullscreenFit != null) {
-          return _buildFullscreenChild(videoChild, ratio, fullscreenFit!);
+        if (isFullScreenDisplay) {
+          return _buildFullscreenChild(
+            videoChild,
+            ratio,
+            controller.fullscreenVideoFit,
+          );
         }
 
         return AspectRatio(

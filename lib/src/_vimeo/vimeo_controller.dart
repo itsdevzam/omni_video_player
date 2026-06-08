@@ -41,7 +41,6 @@ class VimeoController extends OmniPlaybackController {
   double _volume = 1;
 
   bool _isSeeking = false;
-  bool _isFullScreen = false;
   bool _hasStarted = false;
   bool _isBuffering = true;
   bool _hasError = false;
@@ -185,9 +184,6 @@ class VimeoController extends OmniPlaybackController {
   }
 
   @override
-  bool get isFullScreen => _isFullScreen;
-
-  @override
   Duration get currentPosition => _currentPosition;
 
   set currentPosition(Duration value) {
@@ -292,14 +288,11 @@ class VimeoController extends OmniPlaybackController {
     required Widget Function(BuildContext)? pageBuilder,
     void Function(bool)? onToggle,
   }) async {
-    if (_isFullScreen) {
-      _isFullScreen = false;
-      notifyListeners();
+    if (isFullScreen) {
       onToggle?.call(false);
       Navigator.of(context).pop();
     } else {
-      _isFullScreen = true;
-      notifyListeners();
+      beginFullScreenTransition();
       onToggle?.call(true);
 
       await Navigator.push(
@@ -311,6 +304,9 @@ class VimeoController extends OmniPlaybackController {
           },
         ),
       );
+
+      exitFullScreenMode();
+      onToggle?.call(false);
     }
   }
 

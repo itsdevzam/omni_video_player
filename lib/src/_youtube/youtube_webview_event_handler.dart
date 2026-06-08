@@ -138,9 +138,9 @@ class YouTubeWebViewEventHandler {
   }
 
   void _handlePausedState() {
-    if (controller.wasPlayingBeforeGoOnFullScreen == true) {
+    if (controller.wasPlayingBeforeFullScreen &&
+        (controller.isFullScreen || controller.isEnteringFullScreen)) {
       controller.play(useGlobalController: false);
-      controller.wasPlayingBeforeGoOnFullScreen = null;
     } else {
       controller.isPlaying = false;
     }

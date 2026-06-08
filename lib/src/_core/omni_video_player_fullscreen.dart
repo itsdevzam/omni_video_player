@@ -39,18 +39,45 @@ class _OmniVideoPlayerFullscreenState extends State<OmniVideoPlayerFullscreen> {
   @override
   void initState() {
     super.initState();
-    _enterFullscreenMode();
     _effectiveAspectRatio = _computeAspectRatio();
     widget.controller.setFullscreenVideoFit(
       widget.configuration.playerUIVisibilityOptions.fullscreenVideoFit,
     );
+    _lockOrientationEarly();
+    _enterFullscreenMode();
+    widget.controller.enterFullScreenMode();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      widget.controller.resumeAfterFullScreenEntered();
+    });
   }
 
   @override
   void dispose() {
+    widget.controller.exitFullScreenMode();
     _exitFullscreenMode();
     SystemChrome.setPreferredOrientations(DeviceOrientation.values);
     super.dispose();
+  }
+
+  void _lockOrientationEarly() {
+    final shouldLockOrientation =
+        widget.configuration.playerUIVisibilityOptions.enableOrientationLock;
+    if (!shouldLockOrientation) return;
+
+    final preferredOrientation =
+        widget.configuration.playerUIVisibilityOptions.fullscreenOrientation ??
+        _getOrientationFromVideoSize();
+
+    SystemChrome.setPreferredOrientations([
+      if (preferredOrientation == Orientation.portrait) ...[
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ] else ...[
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ],
+    ]);
   }
 
   /// Hides system UI overlays (status bar, navigation bar)
@@ -122,7 +149,6 @@ class _OmniVideoPlayerFullscreenState extends State<OmniVideoPlayerFullscreen> {
               controller: widget.controller,
               isFullScreenDisplay: true,
               aspectRatio: _effectiveAspectRatio,
-              fullscreenFit: widget.controller.fullscreenVideoFit,
             ),
           ),
         ),

@@ -3,7 +3,6 @@ import 'package:omni_video_player/omni_video_player/controllers/omni_playback_co
 import 'package:omni_video_player/omni_video_player/models/video_player_callbacks.dart';
 import 'package:omni_video_player/omni_video_player/models/video_player_configuration.dart';
 import 'package:omni_video_player/omni_video_player/theme/omni_video_player_theme.dart';
-import 'package:omni_video_player/src/_youtube/youtube_webview_controller.dart';
 import 'package:omni_video_player/src/navigation/route_aware_listener.dart';
 import 'package:omni_video_player/src/_core/utils/omni_video_player_viewport.dart';
 import 'package:omni_video_player/src/utils/conditional_parent.dart';
@@ -127,7 +126,8 @@ class _OmniVideoPlayerViewState extends State<OmniVideoPlayerView> {
     if (visibleFraction == 0 &&
         config.videoSourceConfiguration.pauseWhenOutOfView &&
         controller.isPlaying &&
-        (!controller.isFullScreen || controller is YouTubeWebViewController)) {
+        !controller.isFullScreen &&
+        !controller.isEnteringFullScreen) {
       controller.pause(useGlobalController: false);
     }
 

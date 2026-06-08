@@ -99,7 +99,47 @@ abstract class OmniPlaybackController with ChangeNotifier {
   bool get hasStarted;
 
   /// Whether the player is currently in fullscreen mode.
-  bool get isFullScreen;
+  bool _isFullScreen = false;
+
+  bool get isFullScreen => _isFullScreen;
+
+  /// True while a fullscreen route is being pushed but not yet mounted.
+  bool _enteringFullScreen = false;
+
+  bool get isEnteringFullScreen => _enteringFullScreen;
+
+  bool _wasPlayingBeforeFullScreen = false;
+
+  bool get wasPlayingBeforeFullScreen => _wasPlayingBeforeFullScreen;
+
+  /// Call before pushing the fullscreen route.
+  void beginFullScreenTransition() {
+    _wasPlayingBeforeFullScreen = isPlaying;
+    _enteringFullScreen = true;
+  }
+
+  /// Call when the fullscreen page mounts.
+  void enterFullScreenMode() {
+    if (_isFullScreen) return;
+    _isFullScreen = true;
+    _enteringFullScreen = false;
+    notifyListeners();
+  }
+
+  /// Call when the fullscreen page is dismissed.
+  void exitFullScreenMode() {
+    if (!_isFullScreen && !_enteringFullScreen) return;
+    _isFullScreen = false;
+    _enteringFullScreen = false;
+    notifyListeners();
+  }
+
+  /// Resumes playback after fullscreen is shown if it was playing before.
+  Future<void> resumeAfterFullScreenEntered() async {
+    if (_wasPlayingBeforeFullScreen && !isPlaying) {
+      await play(useGlobalController: false);
+    }
+  }
 
   /// The current playback position.
   Duration get currentPosition;

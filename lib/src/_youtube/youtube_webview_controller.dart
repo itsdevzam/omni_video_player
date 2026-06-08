@@ -28,7 +28,6 @@ class YouTubeWebViewController extends OmniPlaybackController {
   bool _isBuffering = false;
   bool _isFullyVisible = false;
   bool _isLoadedVideo = false;
-  bool? wasPlayingBeforeGoOnFullScreen;
   double _volume = 100;
   double _previousVolume = 100;
   Duration _duration = Duration.zero;
@@ -36,7 +35,6 @@ class YouTubeWebViewController extends OmniPlaybackController {
   Duration _currentPosition = Duration.zero;
   OmniVideoQuality? _currentVideoQuality;
   List<OmniVideoQuality>? _availableVideoQualities;
-  bool _isFullScreen = false;
   late final String _videoId;
   late final GlobalPlaybackController? _globalController;
   GlobalKey<OmniVideoPlayerInitializerState> globalKeyPlayer;
@@ -284,14 +282,6 @@ class YouTubeWebViewController extends OmniPlaybackController {
           currentPosition.inSeconds >= (duration.inSeconds - 1));
 
   @override
-  bool get isFullScreen => _isFullScreen;
-
-  set isFullScreen(bool value) {
-    _isFullScreen = value;
-    notifyListeners();
-  }
-
-  @override
   bool get isLive => _isLive;
 
   set isLive(bool value) {
@@ -366,29 +356,30 @@ class YouTubeWebViewController extends OmniPlaybackController {
   }
 
   @override
+  Future<void> resumeAfterFullScreenEntered() async {
+    if (!wasPlayingBeforeFullScreen || isPlaying) return;
+
+    if (isLive) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (!isDisposed) play(useGlobalController: false);
+      });
+    } else {
+      await play(useGlobalController: false);
+    }
+  }
+
+  @override
   Future<void> switchFullScreenMode(
     BuildContext context, {
     required Widget Function(BuildContext p1)? pageBuilder,
     void Function(bool p1)? onToggle,
   }) async {
     if (isFullScreen) {
-      isFullScreen = false;
-      notifyListeners();
       onToggle?.call(false);
       Navigator.of(context).pop();
     } else {
-      wasPlayingBeforeGoOnFullScreen = isPlaying;
-      isFullScreen = true;
-      notifyListeners();
+      beginFullScreenTransition();
       onToggle?.call(true);
-
-      // FIX LIVE: Se il video è una live e stava riproducendo, forziamo
-      // un play dopo mezzo secondo per evitare che il cambio rotta lo congeli.
-      if (isLive && wasPlayingBeforeGoOnFullScreen == true) {
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (!isDisposed) play(useGlobalController: false);
-        });
-      }
 
       await Navigator.push(
         context,
@@ -399,6 +390,9 @@ class YouTubeWebViewController extends OmniPlaybackController {
           },
         ),
       );
+
+      exitFullScreenMode();
+      onToggle?.call(false);
     }
   }
 

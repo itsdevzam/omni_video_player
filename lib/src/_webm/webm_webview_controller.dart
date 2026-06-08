@@ -28,7 +28,6 @@ class WebmVideoWebViewController extends OmniPlaybackController {
   bool _isBuffering = false;
   bool _isFullyVisible = false;
 
-  bool? wasPlayingBeforeGoOnFullScreen;
   double _volume = 100;
   double _previousVolume = 100;
   Duration _duration = Duration.zero;
@@ -36,7 +35,6 @@ class WebmVideoWebViewController extends OmniPlaybackController {
   Duration _currentPosition = Duration.zero;
   OmniVideoQuality? _currentVideoQuality;
   List<OmniVideoQuality>? _availableVideoQualities;
-  bool _isFullScreen = false;
   late final GlobalPlaybackController? _globalController;
   GlobalKey<OmniVideoPlayerInitializerState> globalKeyPlayer;
 
@@ -226,14 +224,6 @@ class WebmVideoWebViewController extends OmniPlaybackController {
           currentPosition.inSeconds >= (duration.inSeconds - 1));
 
   @override
-  bool get isFullScreen => _isFullScreen;
-  set isFullScreen(bool value) {
-    if (isDisposed) return;
-    _isFullScreen = value;
-    notifyListeners();
-  }
-
-  @override
   bool get isLive => _isLive;
   set isLive(bool value) {
     if (isDisposed) return;
@@ -307,14 +297,10 @@ class WebmVideoWebViewController extends OmniPlaybackController {
     void Function(bool p1)? onToggle,
   }) async {
     if (isFullScreen) {
-      isFullScreen = false;
-      notifyListeners();
       onToggle?.call(false);
       Navigator.of(context).pop();
     } else {
-      wasPlayingBeforeGoOnFullScreen = isPlaying;
-      isFullScreen = true;
-      notifyListeners();
+      beginFullScreenTransition();
       onToggle?.call(true);
 
       await Navigator.push(
@@ -326,6 +312,9 @@ class WebmVideoWebViewController extends OmniPlaybackController {
           },
         ),
       );
+
+      exitFullScreenMode();
+      onToggle?.call(false);
     }
   }
 
