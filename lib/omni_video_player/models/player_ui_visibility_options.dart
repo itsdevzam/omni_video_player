@@ -188,7 +188,7 @@ class PlayerUIVisibilityOptions {
     this.customAspectRatioNormal,
     this.customAspectRatioFullScreen,
     this.fullscreenOrientation,
-    this.fullscreenVideoFit = BoxFit.cover,
+    this.fullscreenVideoFit = BoxFit.contain,
     this.showFullscreenVideoFitButton = true,
     this.showScrubbingThumbnailPreview = true,
     this.fitVideoToBounds = true,

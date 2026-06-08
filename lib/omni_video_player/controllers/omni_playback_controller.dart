@@ -229,7 +229,7 @@ abstract class OmniPlaybackController with ChangeNotifier {
   bool isFullyVisible = false;
 
   /// Active fullscreen video scaling mode (contain / cover / fill).
-  BoxFit _fullscreenVideoFit = BoxFit.cover;
+  BoxFit _fullscreenVideoFit = BoxFit.contain;
 
   BoxFit get fullscreenVideoFit => _fullscreenVideoFit;
 

@@ -684,16 +684,33 @@ class GenericPlaybackController extends OmniPlaybackController {
   /// and an optional [onToggle] callback to react to fullscreen state changes.
   @override
   Future<void> resumeAfterFullScreenEntered() async {
-    if (!wasPlayingBeforeFullScreen || isFinished) return;
+    if (isFinished || isDisposed) return;
 
-    // After Hero reparent the video surface may be frozen while audio keeps going.
-    if (!videoController.value.isPlaying) {
-      await _resumeSynchronized();
+    final bool shouldResume = wasPlayingBeforeFullScreen ||
+        isPlaying ||
+        (audioController?.value.isPlaying ?? false);
+
+    if (!shouldResume) return;
+
+    // Separate A+V streams can drift after Hero reparent; a short forward seek
+    // realigns both tracks. Only runs when entering fullscreen.
+    if (audioController != null) {
+      await Future.delayed(const Duration(milliseconds: 150));
+      if (isDisposed) return;
+
+      var target = currentPosition + const Duration(seconds: 1);
+      if (duration > Duration.zero && target >= duration) {
+        target = duration - const Duration(milliseconds: 200);
+        if (target < Duration.zero) target = Duration.zero;
+      }
+
+      wasPlayingBeforeSeek = true;
+      await seekTo(target);
       return;
     }
 
-    if (audioController != null && !audioController!.value.isPlaying) {
-      await audioController!.play();
+    if (!videoController.value.isPlaying) {
+      await _resumeSynchronized();
     }
   }
 
